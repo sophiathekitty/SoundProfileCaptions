@@ -5,11 +5,14 @@ using UnityEngine;
 [CreateAssetMenu()]
 public class SoundProfile : ScriptableObject {
 
-    public Color CaptionColor;
+    public Color CaptionColor = new Color(1,1,1,1);
     public string before, after;
     public SoundScale[] sounds;
+    public IRangeVariable rangeVariable;
+    public IntRangeVariable intRange;
+    public FloatRangeVariable floatRange;
     public AnimationCurve clipSelect = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(1f, 1f));
-
+    public SoundProfile[] soundProfiles;
     public enum SelectMode { CounterSize, SizeCounter, IdleRandom, CounterRandom, SizeRandom  }
     public SelectMode mode;
 
@@ -28,6 +31,27 @@ public class SoundProfile : ScriptableObject {
             case SelectMode.SizeRandom:
                 return Sound(size).RandomClip();
         }
+        return null;
+    }
+    public SoundEffect GetSound()
+    {
+        if(sounds.Length > 0)
+        {
+            if (intRange != null)
+                return Sound(intRange.Percent).Sound();
+            if (floatRange != null)
+                return Sound(floatRange.Percent).Sound();
+            return Sound(Random.Range(0f,1f)).Sound();
+        }
+        if (soundProfiles.Length > 0)
+        {
+            if (intRange != null)
+                return soundProfiles[Mathf.RoundToInt(Mathf.Lerp(0, soundProfiles.Length - 1, clipSelect.Evaluate(intRange.Percent)))].GetSound();
+            if (floatRange != null)
+                return soundProfiles[Mathf.RoundToInt(Mathf.Lerp(0, soundProfiles.Length - 1, clipSelect.Evaluate(floatRange.Percent)))].GetSound();
+            return soundProfiles[Mathf.RoundToInt(Mathf.Lerp(0, soundProfiles.Length - 1, clipSelect.Evaluate(Random.Range(0f,1f))))].GetSound();
+        }
+
         return null;
     }
     public SoundEffect GetSound(float size, float counter, float idle)
@@ -59,6 +83,9 @@ public class SoundProfile : ScriptableObject {
     {
         public AudioClip[] clips;
         public SoundEffect[] soundEffects;
+        public IRangeVariable rangeVariable;
+        public IntRangeVariable intRange;
+        public FloatRangeVariable floatRange;
         public AnimationCurve clipSelect = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(1f, 1f));
         public AudioClip Clip(float percent)
         {
@@ -67,6 +94,14 @@ public class SoundProfile : ScriptableObject {
         public AudioClip RandomClip()
         {
             return clips[Mathf.RoundToInt(Mathf.Lerp(0, clips.Length - 1, clipSelect.Evaluate(Random.Range(0f, 1f))))];
+        }
+        public SoundEffect Sound()
+        {
+            if (intRange != null)
+                return soundEffects[Mathf.RoundToInt(Mathf.Lerp(0, soundEffects.Length - 1, clipSelect.Evaluate(intRange.Percent)))];
+            if(floatRange != null)
+                return soundEffects[Mathf.RoundToInt(Mathf.Lerp(0, soundEffects.Length - 1, clipSelect.Evaluate(floatRange.Percent)))];
+            return null;
         }
         public SoundEffect Sound(float percent)
         {
