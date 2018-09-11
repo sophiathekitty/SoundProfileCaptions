@@ -15,6 +15,7 @@ public class SoundFXPlayer : MonoBehaviour {
     public enum VolumePitchMode { SizeCounter, CounterSize, CounterCounter, CounterIdle, IdleCounter, IdleIdle, IdleSize, SizeSize, SizeIdle }
     public VolumePitchMode PitchVolume;
     public bool autoplay;
+    public IntRangeVariable cycle;
 	// Use this for initialization
 	void Start () {
         audioSource = GetComponent<AudioSource>();
@@ -43,9 +44,16 @@ public class SoundFXPlayer : MonoBehaviour {
         }
     }
 
-
     public void PlaySound()
     {
+        if (cycle != null && cycle.RuntimeValue < cycle.MaxValue)
+        {
+            Debug.Log("Skip sound: " + cycle.RuntimeValue);
+            cycle.RuntimeValue++;
+            return;
+        }
+        else if(cycle != null)
+            cycle.RuntimeValue = cycle.MinValue;
         switch (PitchVolume)
         {
             case VolumePitchMode.CounterCounter:
@@ -85,14 +93,17 @@ public class SoundFXPlayer : MonoBehaviour {
                 audioSource.volume = clipVolume.Evaluate(Size.Percent);
                 break;
         }
-        SoundProfile.SoundEffect soundEffect = soundProfile.GetSound(Size.Percent, Counter.Percent, IdleTime.Percent);
-        if(soundEffect != null)
+        SoundProfile.SoundEffect soundEffect = soundProfile.GetSound();
+        //SoundProfile.SoundEffect soundEffect = soundProfile.GetSound(Size.Percent, Counter.Percent, IdleTime.Percent);
+        if (soundEffect != null)
         {
             audioSource.PlayOneShot(soundEffect.clip);
             if (displayCaptions != null)
                 displayCaptions.AddCaption(soundProfile.CaptionColor, VolumePercent, soundProfile.before + soundEffect.caption + soundProfile.after);
         }
-        audioSource.PlayOneShot(soundProfile.Clip(Size.Percent, Counter.Percent, IdleTime.Percent));
+        else
+            Debug.LogWarning("sound effect not found " + name);
+        //audioSource.PlayOneShot(soundProfile.Clip(Size.Percent, Counter.Percent, IdleTime.Percent));
             
 
     }

@@ -13,10 +13,10 @@ public class SoundProfile : ScriptableObject {
     public FloatRangeVariable floatRange;
     public AnimationCurve clipSelect = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(1f, 1f));
     public SoundProfile[] soundProfiles;
-    public enum SelectMode { CounterSize, SizeCounter, IdleRandom, CounterRandom, SizeRandom  }
-    public SelectMode mode;
+    //public enum SelectMode { CounterSize, SizeCounter, IdleRandom, CounterRandom, SizeRandom  }
+    //public SelectMode mode;
 
-    public AudioClip Clip(float size, float counter, float idle)
+    /*public AudioClip Clip(float size, float counter, float idle)
     {
         switch (mode)
         {
@@ -32,29 +32,38 @@ public class SoundProfile : ScriptableObject {
                 return Sound(size).RandomClip();
         }
         return null;
+    }*/
+    private float RangePercent
+    {
+        get
+        {
+            if (intRange != null)
+                return intRange.Percent;
+            if (floatRange != null)
+                return floatRange.Percent;
+            return Random.Range(0f, 1f);
+        }
     }
     public SoundEffect GetSound()
     {
+        float p = RangePercent;
         if(sounds.Length > 0)
         {
-            if (intRange != null)
-                return Sound(intRange.Percent).Sound();
-            if (floatRange != null)
-                return Sound(floatRange.Percent).Sound();
-            return Sound(Random.Range(0f,1f)).Sound();
+            SoundScale sp = Sound(p);
+            SoundEffect s = sp.Sound();
+            return s;
         }
         if (soundProfiles.Length > 0)
         {
-            if (intRange != null)
-                return soundProfiles[Mathf.RoundToInt(Mathf.Lerp(0, soundProfiles.Length - 1, clipSelect.Evaluate(intRange.Percent)))].GetSound();
-            if (floatRange != null)
-                return soundProfiles[Mathf.RoundToInt(Mathf.Lerp(0, soundProfiles.Length - 1, clipSelect.Evaluate(floatRange.Percent)))].GetSound();
-            return soundProfiles[Mathf.RoundToInt(Mathf.Lerp(0, soundProfiles.Length - 1, clipSelect.Evaluate(Random.Range(0f,1f))))].GetSound();
+            SoundProfile sp = soundProfiles[Mathf.RoundToInt(Mathf.Lerp(0, soundProfiles.Length - 1, clipSelect.Evaluate(p)))];
+            SoundEffect s = sp.GetSound();
+            Debug.Log("2.Sound Profiles: " + sp.name + " => " + s.caption);
+            return s;
         }
 
         return null;
     }
-    public SoundEffect GetSound(float size, float counter, float idle)
+    /*public SoundEffect GetSound(float size, float counter, float idle)
     {
         switch (mode)
         {
@@ -70,7 +79,7 @@ public class SoundProfile : ScriptableObject {
                 return Sound(size).RandomSound();
         }
         return null;
-    }
+    }*/
 
     private SoundScale Sound(float percent)
     {
@@ -95,13 +104,20 @@ public class SoundProfile : ScriptableObject {
         {
             return clips[Mathf.RoundToInt(Mathf.Lerp(0, clips.Length - 1, clipSelect.Evaluate(Random.Range(0f, 1f))))];
         }
+        private int soundIndex
+        {
+            get
+            {
+                if (intRange != null)
+                    return Mathf.RoundToInt(Mathf.Lerp(0, soundEffects.Length - 1, clipSelect.Evaluate(intRange.Percent)));
+                if (floatRange != null)
+                    return Mathf.RoundToInt(Mathf.Lerp(0, soundEffects.Length - 1, clipSelect.Evaluate(floatRange.Percent)));
+                return Mathf.RoundToInt(Mathf.Lerp(0, soundEffects.Length - 1, clipSelect.Evaluate(Random.Range(0f,1f))));
+            }
+        }
         public SoundEffect Sound()
         {
-            if (intRange != null)
-                return soundEffects[Mathf.RoundToInt(Mathf.Lerp(0, soundEffects.Length - 1, clipSelect.Evaluate(intRange.Percent)))];
-            if(floatRange != null)
-                return soundEffects[Mathf.RoundToInt(Mathf.Lerp(0, soundEffects.Length - 1, clipSelect.Evaluate(floatRange.Percent)))];
-            return null;
+            return soundEffects[soundIndex];
         }
         public SoundEffect Sound(float percent)
         {
