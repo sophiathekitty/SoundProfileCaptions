@@ -8,7 +8,6 @@ public class SoundProfile : ScriptableObject {
     public Color CaptionColor = new Color(1,1,1,1);
     public string before, after;
     public SoundScale[] sounds;
-    public IRangeVariable rangeVariable;
     public IntRangeVariable intRange;
     public FloatRangeVariable floatRange;
     public AnimationCurve clipSelect = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(1f, 1f));
@@ -56,8 +55,9 @@ public class SoundProfile : ScriptableObject {
         if (soundProfiles.Length > 0)
         {
             SoundProfile sp = soundProfiles[Mathf.RoundToInt(Mathf.Lerp(0, soundProfiles.Length - 1, clipSelect.Evaluate(p)))];
+            Debug.Log(sp.name);
+
             SoundEffect s = sp.GetSound();
-            Debug.Log("2.Sound Profiles: " + sp.name + " => " + s.caption);
             return s;
         }
 
@@ -92,7 +92,6 @@ public class SoundProfile : ScriptableObject {
     {
         public AudioClip[] clips;
         public SoundEffect[] soundEffects;
-        public IRangeVariable rangeVariable;
         public IntRangeVariable intRange;
         public FloatRangeVariable floatRange;
         public AnimationCurve clipSelect = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(1f, 1f));

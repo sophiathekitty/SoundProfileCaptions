@@ -48,12 +48,11 @@ public class SoundFXPlayer : MonoBehaviour {
     {
         if (cycle != null && cycle.RuntimeValue < cycle.MaxValue)
         {
-            Debug.Log("Skip sound: " + cycle.RuntimeValue);
             cycle.RuntimeValue++;
             return;
         }
         else if(cycle != null)
-            cycle.RuntimeValue = cycle.MinValue;
+            cycle.RuntimeValue = (int)cycle.MinValue;
         switch (PitchVolume)
         {
             case VolumePitchMode.CounterCounter:
